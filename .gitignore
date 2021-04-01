@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+*.sqlite
+*.db
+.*.swp
+.DS_Store
+.private
+.secret
+.env
+others
+venv
