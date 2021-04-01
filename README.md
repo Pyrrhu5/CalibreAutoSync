@@ -1,93 +1,113 @@
-# <++>
+# E-Reader Sync
 
-**Version**: <++> 
+_The purpose is quite simple: a linux server serving Calibre-server, and I don't want to have to manually ( 🤮 ) transfer my ebooks to it_
 
-<++>
+This script takes care of, after plugging the e-reader :
 
-## Installation
+1. Mounting it on a specific mount point
+2. Fetching and transferring all new e-books since last sync
+3. Unmounting the e-reader
+4. Playing a sound
 
-**Python**
+A `calibre-server` service running is actually not required, just the `metadata.db`of calibre is good enough.
 
-Python version 3.6 or above
+## Some manual ( 🤮 ) setting-up
 
-_On Linux/Mac:_
-```bash
-python3 --version
-```
+I promise, doing it once is enough
 
-_On Windows_:
-```bash
-python --version
-```
+### This stuff is needed
 
-**Clone the repository**
+`sqlite3 --version`
 
-Git is required
-```bash
-git --version
-```
+Otherwise `sudo apt install sqlite3` (I don't use Arch btw)
 
-Clone it
-```bash
-git clone <++> <Where you want to install it>
-```
+`aplay --version`
 
-**Dependencies**
+### Mount the device
+#### Identify the device
 
-Install dependencies:
+Plug the device, then run `lsusb`, if it's impossible to know which is which, unplug it, rerun the command and compare.
 
-_On Linux/Mac:_
-```bash
-pip3 install -r requirements.txt
-```
-
-_On Windows_:
-```bash
-pip install -r requirements.txt
-```
-
-**Executable**
-
-Allows execution of entry point (not needed for Windows)
-```bash
-chmod +x <++>
-```
-
-**Bash shortcut**
-
-If you want to access it directly from the terminal (Linux and MacOsX) with the command `<++>`:
+The output should look like this:
 
 ```bash
-INSTALL_DIR="<the full path to the installation directory>"
-printf "# <++>\nalias <++>='${INSTALL_DIR}/<++>.py'" >> ~/.bash_aliases
+Bus 001 Device 007: ID 2237:4228 Kobo Inc.
 ```
 
-**Update**
+Take note of the vendor (here, 2237) and product (here, 4228) number
 
-```bash
-git pull
-```
+The `/dev/disk` needs to be identified.
 
-## Documentation
-See <++> 
+**Method 1**
+Either `by-label`, the name is explicit enough to guest which one is it (often a device from the same manufacturer will have the same label)
+`ls /dev/disk/by-label`
 
-## Changelog
-See <++>
 
-## License and EULA
-Unmodified [MIT license](https://opensource.org/licenses/MIT)
+**Method 2**
+Or `by-id`
+In this case, run (with your own vendor & product numbers)
+`lsusb -d 2237:4228 -v | grep iSerial`
 
-See `LICENSE.md`
+Example :
+`iSerial                 5 N249850080827`
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Then
+`ls /dev/disk/by-id | grep N249850080827`
+with your own output of the previous command instead of `N...`
 
-## Contributing
+Example:
+`usb-Linux_File-Stor_Gadget_N249850080827-0:0`
 
-I welcome any suggestion, corrections or improvements via push requests or email.
+#### Create the mount point
 
-Please do report any bugs with:
+`mkdir /mnt/ereader`
 
-- the error message,
-- the log,
-- the steps to reproduce it,
-- the OS type and version
+Or whatever the path you want the device to be mounted on
+
+#### Mount
+
+Edit the `fstab` (use `nano` instead of `vim` if you don't know what vim is)
+
+`sudo vim /etc/fstab`
+
+And add a line at the end, adapt the beginning to the method used to identify the device and the mount point
+
+`/dev/disk/by-label/KOBOeReader /mnt/ereader auto user,rw,nofail 0 0`
+
+#### Test it
+
+Mount it first
+
+`mount /mnt/ereader`
+
+Excepting no output
+
+Check the content
+
+`ls /mnt/ereader`
+
+In my case, all the e-books are store directly there and will be recognized up by the reader even if I don't respect the folder hierarchy
+
+### Set the script to auto-launch at plugged-in
+
+This is a good time to download the script `autosync.sh` and put it somewhere (it will be in `~/ereadersync/` in the examples)
+
+Edit it, to set the variables
+
+`EBOOK_ROOT`
+
+`LOG_DIR`
+
+Make it executable:
+
+`chmod +x ~/ereadersync/autosync.sh`
+
+Create a `udev` rule (named `ereader`, can be changed)
+
+`sudo vim /etc/udev/rules.d/ereader.rules`
+
+Containing :
+
+`ACTION=="add", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="2237", ATTRS{idProduct}=="4228", RUN+="/home/pi/ereadersync/autosync.sh"`
+
+With the vendor and product numbers you grabbed with `lsubs`
