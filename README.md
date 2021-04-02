@@ -73,13 +73,13 @@ Edit the `fstab` (use `nano` instead of `vim` if you don't know what vim is)
 
 And add a line at the end, adapt the beginning to the method used to identify the device and the mount point
 
-`/dev/disk/by-label/KOBOeReader /mnt/ereader auto default,nofail 0 0`
+`/dev/disk/by-label/KOBOeReader /mnt/ereader auto user,rw,nofail 0 0`
 
 #### Test it
 
 Mount it first
 
-`sudo mount /mnt/ereader`
+`mount /mnt/ereader`
 
 Excepting no output
 
