@@ -16,8 +16,6 @@ EREADER="/mnt/ebook/"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
 ALERT="alert.wav"
-# Increase verbosity
-IS_DEBUG=0
 
 now=`date +"%Y-%m-%d %H:%M:%S"`
 echo "=====" $now "=====" | tee $LOG
@@ -47,11 +45,6 @@ if [ -f $SYNC_F ]; then
 else
 	echo "INFO - First sync" | tee $LOG
 fi
-
-if [ $IS_DEBUG ]; then
-	echo "DEBUG - Query: $query" | tee $LOG
-fi
-
 
 # ==============================================================================
 #                               TRANSFER EBOOKS
