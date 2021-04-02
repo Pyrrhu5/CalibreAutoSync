@@ -26,7 +26,7 @@ now=`date +"%Y-%m-%d %H:%M:%S"`
 # exit on error
 set -e
 
-echo "=====" $now "=====" | tee $LOG
+echo "=====" $now "=====" | tee -a $LOG
 
 
 mount -a $EREADER
@@ -48,9 +48,9 @@ FROM
 if [ -f $SYNC_F ]; then
 	lastSync=`cat $SYNC_F`
 	query=$query" WHERE timestamp > DATETIME('$lastSync')"
-	echo "INFO - Last sync was $lastSync" | tee $LOG
+	echo "INFO - Last sync was $lastSync" | tee -a $LOG
 else
-	echo "INFO - First sync" | tee $LOG
+	echo "INFO - First sync" | tee -a $LOG
 fi
 
 # ==============================================================================
@@ -63,10 +63,10 @@ read -a rows <<< $(sqlite3 $EBOOK_ROOT/metadata.db "$query")
 sqlite3 $EBOOK_ROOT/metadata.db "$query" | while read -a r 
 do
 	if [ -f "$r" ]; then
-		echo "INFO - Transfering: $r" | tee $LOG
+		echo "INFO - Transfering: $r" | tee -a $LOG
 		cp "$r" $EREADER
 	else
-		echo "ERROR - That's not a file: $r" | tee $LOG
+		echo "ERROR - That's not a file: $r" | tee -a $LOG
 	fi
 done
 
@@ -85,5 +85,5 @@ fi
 # Reset the string separator
 IFS=" "
 
-echo "INFO - Done." | tee $LOG
+echo "INFO - Done." | tee -a $LOG
 EOF
