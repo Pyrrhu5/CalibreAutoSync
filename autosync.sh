@@ -16,14 +16,22 @@ EREADER="/mnt/ebook/"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
 ALERT="alert.wav"
+# Linux user to run the script as
+USR="pi"
 
 now=`date +"%Y-%m-%d %H:%M:%S"`
+
+# exit on error
+set -e
+# switch user
+sudo -u $USR bash << EOF
+
+
 echo "=====" $now "=====" | tee $LOG
 
 
 mount $EREADER
 
-set -e
 # ==============================================================================
 #                                 PREPARE QUERY
 # ==============================================================================
@@ -79,3 +87,4 @@ fi
 IFS=" "
 
 echo "INFO - Done." | tee $LOG
+EOF
