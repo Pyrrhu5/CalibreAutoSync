@@ -4,18 +4,20 @@
 # ==============================================================================
 #                                    SETTINGS
 # ==============================================================================
+# Absolute root path of the directory
+SCRIPT_DIR=$(cd `dirname $0` && PWD)
 # The path to Calibre's library root directory
 EBOOK_ROOT="/home/pi/md0/Ebooks"
 # The path and filename of the logs of the script
 LOG="/home/pi/logs/ebook_sync.log"
 # File to store the last sync date
 # A full path can be provided or it will be stored on the script root path
-SYNC_F="last.dat"
+SYNC_F="$SCRIPT_DIR/last.dat"
 # Mount point of the e-reader
 EREADER="/mnt/ebook/"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
-ALERT="alert.wav"
+ALERT="$SCRIPT_DIR/alert.wav"
 # Linux user to run the script as
 USR="pi"
 
