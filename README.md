@@ -64,6 +64,7 @@ Example:
 
 Or whatever the path you want the device to be mounted on
 
+
 #### Mount
 
 Edit the `fstab` (use `nano` instead of `vim` if you don't know what vim is)
@@ -72,13 +73,13 @@ Edit the `fstab` (use `nano` instead of `vim` if you don't know what vim is)
 
 And add a line at the end, adapt the beginning to the method used to identify the device and the mount point
 
-`/dev/disk/by-label/KOBOeReader /mnt/ereader auto user,rw,nofail 0 0`
+`/dev/disk/by-label/KOBOeReader /mnt/ereader auto default,nofail 0 0`
 
 #### Test it
 
 Mount it first
 
-`mount /mnt/ereader`
+`sudo mount /mnt/ereader`
 
 Excepting no output
 
@@ -98,15 +99,22 @@ Make it executable:
 
 `chmod +x ~/ereadersync/autosync.sh`
 
+Copy the service `ereader.service` to the systemctl after editing the `User` and `ExecStart` lines with the proper path to the script
+
+`vim ereader.service`
+
+`mv ereader.service /etc/systemd/system/ereader.service`
+
+Reload systemctl
+`sudo systemctl daemon-reload`
+
 Create a `udev` rule (named `ereader`, can be changed)
 
 `sudo vim /etc/udev/rules.d/ereader.rules`
 
-Containing :
-
-`ACTION=="add", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="2237", ATTRS{idProduct}=="4228", RUN+="/home/pi/ereadersync/autosync.sh"`
-
 With the vendor and product numbers you grabbed with `lsubs`
+
+`ACTION=="add", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="2237", ATTRS{idProduct}=="4228", RUN+="/bin/systemctl start ereader.service --no-block"`
 
 Update the udevs rules
 

@@ -27,7 +27,7 @@ set -e
 echo "=====" $now "=====" | tee $LOG
 
 
-mount $EREADER
+mount -a $EREADER
 
 # ==============================================================================
 #                                 PREPARE QUERY

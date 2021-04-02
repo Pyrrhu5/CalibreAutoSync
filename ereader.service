@@ -1,0 +1,8 @@
+[Unit]
+Description=Synchronise ebooks in calibre-server with a connected ereader
+
+[Service]
+User=pi
+Type=forking
+ExecStart=/home/pi/ereadersync/autosync.sh
+
