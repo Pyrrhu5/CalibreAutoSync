@@ -13,8 +13,11 @@ LOG="/home/pi/logs/ebook_sync.log"
 SYNC_F="last.dat"
 # Mount point of the e-reader
 EREADER="/mnt/ebook/"
+# Which sound to be played after completion of the script
+# leave "" if no sound wanted
+ALERT="alert.wav"
 # Increase verbosity
-IS_DEBUG=1
+IS_DEBUG=0
 
 now=`date +"%Y-%m-%d %H:%M:%S"`
 echo "=====" $now "=====" | tee $LOG
@@ -51,7 +54,7 @@ fi
 
 
 # ==============================================================================
-#                               FETCH EBOOKS LIST
+#                               TRANSFER EBOOKS
 # ==============================================================================
 
 IFS=$'\n'
@@ -59,9 +62,6 @@ read -a rows <<< $(sqlite3 $EBOOK_ROOT/metadata.db "$query")
 
 sqlite3 $EBOOK_ROOT/metadata.db "$query" | while read -a r 
 do
-	# ==========================================================================
-	#                                COPY EBOOKS
-	# ==========================================================================
 	if [ -f "$r" ]; then
 		echo "INFO - Transfering: $r" | tee $LOG
 		cp "$r" $EREADER
@@ -75,8 +75,14 @@ done
 # ==============================================================================
 
 umount $EREADER
+
 echo $now > $SYNC_F
 
-echo "INFO - Done." | tee $LOG
+if [ -f $ALERT ]; then
+	aplay $ALERT
+fi
+
 # Reset the string separator
 IFS=" "
+
+echo "INFO - Done." | tee $LOG
