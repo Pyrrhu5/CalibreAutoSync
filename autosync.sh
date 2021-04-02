@@ -86,4 +86,4 @@ fi
 IFS=" "
 
 echo "INFO - Done." | tee -a $LOG
-EOF
+exit 0
