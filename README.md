@@ -92,11 +92,7 @@ In my case, all the e-books are store directly there and will be recognized up b
 
 This is a good time to download the script `autosync.sh` and put it somewhere (it will be in `~/ereadersync/` in the examples)
 
-Edit it, to set the variables
-
-`EBOOK_ROOT`
-
-`LOG_DIR`
+Edit it, to set some variables.
 
 Make it executable:
 
@@ -111,3 +107,11 @@ Containing :
 `ACTION=="add", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="2237", ATTRS{idProduct}=="4228", RUN+="/home/pi/ereadersync/autosync.sh"`
 
 With the vendor and product numbers you grabbed with `lsubs`
+
+Update the udevs rules
+
+`sudo udevadm control --reload-rules`
+
+`sudo systemctl restart udev.service`
+
+Done \o/
