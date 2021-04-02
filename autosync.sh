@@ -23,9 +23,6 @@ now=`date +"%Y-%m-%d %H:%M:%S"`
 
 # exit on error
 set -e
-# switch user
-sudo -u $USR bash << EOF
-
 
 echo "=====" $now "=====" | tee $LOG
 
