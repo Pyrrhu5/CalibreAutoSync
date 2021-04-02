@@ -5,7 +5,7 @@
 #                                    SETTINGS
 # ==============================================================================
 # Absolute root path of the directory
-SCRIPT_DIR=$(cd `dirname $0` && PWD)
+SCRIPT_DIR=`dirname $0`
 # The path to Calibre's library root directory
 EBOOK_ROOT="/home/pi/md0/Ebooks"
 # The path and filename of the logs of the script
