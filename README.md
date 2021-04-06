@@ -99,7 +99,7 @@ Make it executable:
 
 `chmod +x ~/ereadersync/autosync.sh`
 
-Copy the service `ereader.service` to the systemctl after editing the `User` and `ExecStart` lines with the proper path to the script
+Copy the service `ereader.service` to the systemctl after editing the `User`, `Group` and `ExecStart` lines with the proper path to the script
 
 `vim ereader.service`
 
