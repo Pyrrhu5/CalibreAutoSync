@@ -31,6 +31,12 @@ echo "=====" $now "=====" | tee -a $LOG
 
 mount -a $EREADER
 
+if mount | grep $EREADER > /dev/null; then
+	echo "INFO - Ereader mounted" | tee -a $LOG
+else
+	echo "ERROR - Ereader not mounted. Bye." | tee -a $LOG
+	exit
+fi
 # ==============================================================================
 #                                 PREPARE QUERY
 # ==============================================================================
