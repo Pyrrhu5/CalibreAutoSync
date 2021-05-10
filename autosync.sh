@@ -14,29 +14,39 @@ LOG="/home/pi/logs/ebook_sync.log"
 # A full path can be provided or it will be stored on the script root path
 SYNC_F="$SCRIPT_DIR/last.dat"
 # Mount point of the e-reader
-EREADER="/mnt/ebook/"
+EREADER="/mnt/ebook"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
 ALERT="$SCRIPT_DIR/alert.wav"
-# Linux user to run the script as
-USR="pi"
 
 now=`date +"%Y-%m-%d %H:%M:%S"`
 
-# exit on error
-set -e
 
 echo "=====" $now "=====" | tee -a $LOG
 
+# Tries to mount the ereader 5 times
+limitTries=5
+nTries=1
+while [ $nTries -le $limitTries ]
+do
+	if  mount | grep $EREADER > /dev/null; then
+		echo "INFO - Ereader $EREADER mounted on try $nTries" | tee -a $LOG
+		isMounted=1
+		break
+	else
+		mount $EREADER
+		((nTries++))
+		isMounted=0
+		sleep 5
+		continue
+	fi
+done
 
-mount -a $EREADER
-
-if mount | grep $EREADER > /dev/null; then
-	echo "INFO - Ereader mounted" | tee -a $LOG
-else
-	echo "ERROR - Ereader not mounted. Bye." | tee -a $LOG
+if [ $isMounted -eq 0 ]; then
+	echo "ERROR - After $nTries tries the ebook $EREADER is still not mounted. Bye." | tee -a $LOG
 	exit
 fi
+
 # ==============================================================================
 #                                 PREPARE QUERY
 # ==============================================================================
@@ -86,7 +96,7 @@ umount $EREADER
 echo $now > $SYNC_F
 
 if [ -f $ALERT ]; then
-	aplay $ALERT
+	aplay $ALERT >/dev/null
 fi
 
 # Reset the string separator
