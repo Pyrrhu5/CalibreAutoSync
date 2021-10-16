@@ -5,5 +5,5 @@ Description=Synchronise ebooks in calibre-server with a connected ereader
 User=pi
 Group=pi
 Type=forking
-ExecStart=/home/pi/ereadersync/autosync.sh
+ExecStart=/opt/calibreautosync/autosync.sh
 

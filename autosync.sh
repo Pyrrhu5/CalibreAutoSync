@@ -15,6 +15,7 @@ LOG="/home/pi/logs/ebook_sync.log"
 SYNC_F="$SCRIPT_DIR/last.dat"
 # Mount point of the e-reader
 EREADER="/mnt/ebook"
+EREADER_PATH="/dev/disk/by-label/KOBOeReader"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
 ALERT="$SCRIPT_DIR/alert.wav"
@@ -34,10 +35,10 @@ do
 		isMounted=1
 		break
 	else
-		mount $EREADER
+		sudo mount $EREADER_PATH $EREADER
 		((nTries++))
 		isMounted=0
-		sleep 5
+		sleep 15
 		continue
 	fi
 done
@@ -74,13 +75,13 @@ fi
 # ==============================================================================
 
 IFS=$'\n'
-read -a rows <<< $(sqlite3 $EBOOK_ROOT/metadata.db "$query")
+#read -a rows <<< $(sqlite3 $EBOOK_ROOT/metadata.db "$query")
 
 sqlite3 $EBOOK_ROOT/metadata.db "$query" | while read -a r 
 do
 	if [ -f "$r" ]; then
 		echo "INFO - Transfering: $r" | tee -a $LOG
-		cp "$r" $EREADER
+		sudo cp "$r" $EREADER
 	else
 		echo "ERROR - That's not a file: $r" | tee -a $LOG
 	fi
@@ -91,7 +92,7 @@ done
 # ==============================================================================
 # Don't unmount until all transfers are done
 wait $!
-umount $EREADER
+sudo umount $EREADER
 
 echo $now > $SYNC_F
 
