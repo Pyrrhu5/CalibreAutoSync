@@ -16,6 +16,9 @@ SYNC_F="$SCRIPT_DIR/last.dat"
 # Mount point of the e-reader
 EREADER="/mnt/ebook"
 EREADER_PATH="/dev/disk/by-label/KOBOeReader"
+# Is it a remarkable tablet?
+IS_REMARKABLE=1
+REMARKABLE_IP="10.11.99.1"
 # Which sound to be played after completion of the script
 # leave "" if no sound wanted
 ALERT="$SCRIPT_DIR/alert.wav"
@@ -25,29 +28,29 @@ now=`date +"%Y-%m-%d %H:%M:%S"`
 
 echo "=====" $now "=====" | tee -a $LOG
 
-# Tries to mount the ereader 5 times
-limitTries=5
-nTries=1
-while [ $nTries -le $limitTries ]
-do
-	if  mount | grep $EREADER > /dev/null; then
-		echo "INFO - Ereader $EREADER mounted on try $nTries" | tee -a $LOG
-		isMounted=1
-		break
-	else
-		sudo mount $EREADER_PATH $EREADER
-		((nTries++))
-		isMounted=0
-		sleep 15
-		continue
-	fi
-done
-
-if [ $isMounted -eq 0 ]; then
-	echo "ERROR - After $nTries tries the ebook $EREADER is still not mounted. Bye." | tee -a $LOG
-	exit
+if [ $IS_REMARKABLE -eq 0 ]; then
+    # Tries to mount the ereader 5 times
+    limitTries=5
+    nTries=1
+    while [ $nTries -le $limitTries ]
+    do
+        if  mount | grep $EREADER > /dev/null; then
+            echo "INFO - Ereader $EREADER mounted on try $nTries" | tee -a $LOG
+            isMounted=1
+            break
+        else
+            sudo mount $EREADER_PATH $EREADER
+            ((nTries++))
+            isMounted=0
+            sleep 15
+            continue
+        fi
+    done
+    if [ $isMounted -eq 0 ]; then
+        echo "ERROR - After $nTries tries the ebook $EREADER is still not mounted. Bye." | tee -a $LOG
+        exit
+    fi
 fi
-
 # ==============================================================================
 #                                 PREPARE QUERY
 # ==============================================================================
@@ -75,13 +78,22 @@ fi
 # ==============================================================================
 
 IFS=$'\n'
-#read -a rows <<< $(sqlite3 $EBOOK_ROOT/metadata.db "$query")
 
 sqlite3 $EBOOK_ROOT/metadata.db "$query" | while read -a r 
 do
 	if [ -f "$r" ]; then
 		echo "INFO - Transfering: $r" | tee -a $LOG
-		sudo cp "$r" $EREADER
+        if [ $IS_REMARKABLE -eq 0 ]; then
+            sudo cp "$r" $EREADER
+        else
+            curl "http://$REMARKABLE_IP/upload" \
+                -H "Origin: http://$REMARKABLE_IP" \
+                -H "Accept: */*" \
+                -H "Referer: http://$REMARKABLE_IP/" \
+                -H 'Connection: keep-alive' \
+                -F "file=@$r;filename=$(basename $r);type=$(file $r --mime-type -b)"
+            echo
+        fi
 	else
 		echo "ERROR - That's not a file: $r" | tee -a $LOG
 	fi
@@ -90,9 +102,11 @@ done
 # ==============================================================================
 #                                    CLEAN-UP
 # ==============================================================================
-# Don't unmount until all transfers are done
-wait $!
-sudo umount $EREADER
+if [ $IS_REMARKABLE -eq 0 ]; then
+    # Don't unmount until all transfers are done
+    wait $!
+    sudo umount $EREADER
+fi
 
 echo $now > $SYNC_F
 
